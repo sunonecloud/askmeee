@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>星際投票</title>
+
+<style>
+body{
+  margin:0;
+  font-family:"Noto Sans TC",sans-serif;
+  color:white;
+  background:
+    radial-gradient(circle at top,
+    #1a1f3c,
+    #05060f);
+  overflow-x:hidden;
+}
+
+/* 星星背景 */
+.stars {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow:hidden;
+  z-index:-1;
+}
+
+.star {
+  position:absolute;
+  width:2px;
+  height:2px;
+  background:white;
+  border-radius:50%;
+  animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle{
+  from { opacity:0.2; transform:scale(1); }
+  to { opacity:1; transform:scale(1.8); }
+}
+
+.container{
+  max-width:720px;
+  margin:auto;
+  padding:40px 24px;
+}
+
+.title{
+  text-align:center;
+  font-size:34px;
+  margin-bottom:40px;
+}
+
+.buttons{
+  display:flex;
+  gap:16px;
+  margin-bottom:40px;
+}
+
+button{
+  flex:1;
+  border:none;
+  padding:18px;
+  font-size:20px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:.3s;
+  color:white;
+}
+
+#agree{
+  background:linear-gradient(90deg,#6c63ff,#9d94ff);
+  box-shadow:0 0 25px #6c63ff;
+}
+
+#disagree{
+  background:linear-gradient(90deg,#ff5c7a,#ff9db0);
+  box-shadow:0 0 25px #ff5c7a;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+
+/* 結果區 */
+.result{
+  margin-top:20px;
+}
+
+.row{
+  margin-bottom:30px;
+}
+
+.label{
+  display:flex;
+  justify-content:space-between;
+  font-size:18px;
+  margin-bottom:8px;
+}
+
+.bar-bg{
+  width:100%;
+  height:24px;
+  background:rgba(255,255,255,0.12);
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.bar{
+  height:100%;
+  width:0%;
+  transition:1s ease;
+}
+
+.agree-bar{
+  background:linear-gradient(90deg,#6c63ff,#b0a8ff);
+}
+
+.disagree-bar{
+  background:linear-gradient(90deg,#ff5c7a,#ffb0c0);
+}
+
+.count{
+  margin-top:8px;
+  font-size:14px;
+  color:#cfd3ff;
+}
+</style>
+</head>
+
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <div class="title">
+    你認為社群軟體的使用應該要設有年齡限制嗎？
+  </div>
+
+  <div class="buttons">
+    <button id="agree">🪐 贊成</button>
+    <button id="disagree">☄️ 反對</button>
+  </div>
+
+  <div class="result">
+
+    <div class="row">
+      <div class="label">
+        <span>🪐 贊成</span>
+        <span id="agree-percent">0%</span>
+      </div>
+      <div class="bar-bg">
+        <div class="bar agree-bar" id="agree-bar"></div>
+      </div>
+      <div class="count">
+        有 <span id="agree-count">0</span> 人表示贊成
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">
+        <span>☄️ 反對</span>
+        <span id="disagree-percent">0%</span>
+      </div>
+      <div class="bar-bg">
+        <div class="bar disagree-bar" id="disagree-bar"></div>
+      </div>
+      <div class="count">
+        有 <span id="disagree-count">0</span> 人表示反對
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+
+/* =========================
+   Firebase（請貼你的設定）
+========================= */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getFirestore,
+  doc,
+  updateDoc,
+  increment,
+  onSnapshot,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBpEkhtNMWJDH09fLpeKF59Po2t7f0s96s",
+  authDomain: "askmeee-6f9ce.firebaseapp.com ",
+  projectId: "askmeee-6f9ce"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const voteRef = doc(db, "votes", "mainVote");
+
+
+/* =========================
+   初始化資料（避免空值）
+========================= */
+setDoc(voteRef, {
+  agree: 0,
+  disagree: 0
+}, { merge: true });
+
+
+/* =========================
+   投票功能
+========================= */
+
+document.getElementById("agree").onclick = async () => {
+  if(localStorage.getItem("voted")) return alert("已投票");
+
+  await updateDoc(voteRef, {
+    agree: increment(1)
+  });
+
+  localStorage.setItem("voted","1");
+};
+
+document.getElementById("disagree").onclick = async () => {
+  if(localStorage.getItem("voted")) return alert("已投票");
+
+  await updateDoc(voteRef, {
+    disagree: increment(1)
+  });
+
+  localStorage.setItem("voted","1");
+};
+
+
+/* =========================
+   即時同步
+========================= */
+
+onSnapshot(voteRef, (snap) => {
+
+  const data = snap.data() || {};
+
+  const agree = data.agree || 0;
+  const disagree = data.disagree || 0;
+
+  const total = agree + disagree;
+
+  const a = total ? Math.round(agree / total * 100) : 0;
+  const d = total ? Math.round(disagree / total * 100) : 0;
+
+  document.getElementById("agree-bar").style.width = a + "%";
+  document.getElementById("disagree-bar").style.width = d + "%";
+
+  document.getElementById("agree-percent").textContent = a + "%";
+  document.getElementById("disagree-percent").textContent = d + "%";
+
+  document.getElementById("agree-count").textContent = agree;
+  document.getElementById("disagree-count").textContent = disagree;
+
+});
+
+
+/* =========================
+   星空背景生成
+========================= */
+
+const stars = document.getElementById("stars");
+
+for(let i=0;i<80;i++){
+  const s = document.createElement("div");
+  s.className = "star";
+  s.style.top = Math.random()*100 + "%";
+  s.style.left = Math.random()*100 + "%";
+  s.style.animationDelay = Math.random()*2 + "s";
+  stars.appendChild(s);
+}
+
+</script>
+
+</body>
+</html>
