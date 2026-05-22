@@ -240,16 +240,19 @@ const voteRef = doc(db, "votes", "mainVote");
    初始化資料（避免空值）
 ========================= */
 async function init() {
-  const snap = await getDoc(voteRef);
+  try {
+    const snap = await getDoc(voteRef);
 
-  if (!snap.exists()) {
-    await setDoc(voteRef, {
-      agree: 0,
-      disagree: 0
-    });
+    if (!snap.exists()) {
+      await setDoc(voteRef, {
+        agree: 0,
+        disagree: 0
+      });
+    }
+  } catch (e) {
+    console.error("init error:", e);
   }
 }
-init();
 /* =========================
    投票功能
 ========================= */
