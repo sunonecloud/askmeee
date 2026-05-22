@@ -239,11 +239,14 @@ const voteRef = doc(db, "votes", "mainVote");
 /* =========================
    初始化資料（避免空值）
 ========================= */
-setDoc(voteRef, {
-  agree: 0,
-  disagree: 0
-}, { merge: true });
+const snap = await getDoc(voteRef);
 
+if (!snap.exists()) {
+  await setDoc(voteRef, {
+    agree: 0,
+    disagree: 0
+  });
+}
 
 /* =========================
    投票功能
