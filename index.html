@@ -146,33 +146,53 @@ button:hover{
     <button id="disagree">☄️ 反對</button>
   </div>
 
-  <div class="result">
+  <div class="result-wrap">
 
-    <div class="row">
-      <div class="label">
-        <span>🪐 贊成</span>
-        <span id="agree-percent">0%</span>
-      </div>
-      <div class="bar-bg">
-        <div class="bar agree-bar" id="agree-bar"></div>
-      </div>
-      <div class="count">
-        有 <span id="agree-count">0</span> 人表示贊成
-      </div>
+  <div class="result-labels">
+
+    <div>
+      🪐 贊成
+      <span id="agree-percent">0%</span>
     </div>
 
-    <div class="row">
-      <div class="label">
-        <span>☄️ 反對</span>
-        <span id="disagree-percent">0%</span>
-      </div>
-      <div class="bar-bg">
-        <div class="bar disagree-bar" id="disagree-bar"></div>
-      </div>
-      <div class="count">
-        有 <span id="disagree-count">0</span> 人表示反對
-      </div>
+    <div>
+      <span id="disagree-percent">0%</span>
+      ☄️ 反對
     </div>
+
+  </div>
+
+  <div class="dual-bar">
+
+    <div
+      class="agree-side"
+      id="agree-bar">
+    </div>
+
+    <div
+      class="disagree-side"
+      id="disagree-bar">
+    </div>
+
+  </div>
+
+  <div class="count-row">
+
+    <div>
+      有
+      <span id="agree-count">0</span>
+      人表示贊成
+    </div>
+
+    <div>
+      有
+      <span id="disagree-count">0</span>
+      人表示反對
+    </div>
+
+  </div>
+
+</div>
 
   </div>
 </div>
